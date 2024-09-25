@@ -67,17 +67,22 @@ int failotaajs(){
         
         int skaitaamais;
         
-        //Izveido 255 rindiņas ar katra parādīšanās sakitu
-        for (int i=0; i<n; i++){
-            if (i>0){
-                if(skaitli[i-1] == skaitli[i]){
+        //Izveido 256 rindiņas ar katra parādīšanās sakitu
+        for (int i=0; i<n+1; i++){
+            if (i<1){
+                skaitaamais++;
+            }
+            if(skaitli[i-1] == skaitli[i]){
                     skaitaamais++;
+                    
+                    if(i == n){
+                        fprintf(f, "%d", skaitaamais);
+                    }
                     
                 } else{
                     fprintf(f, "%d\n", skaitaamais);
                     skaitaamais = 0;
                 }
-            }
         }
         /*
         for (int i=0; i<n; i++) {
