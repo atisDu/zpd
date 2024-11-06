@@ -14,7 +14,7 @@
 // VISU MAX IZMĒRU DEFINĪCIJA
 #define par 40000000
 // failu definīcijas
-int skaitli[par];
+int skaitliFikseetie[par];
 int chunkSize[50];
 int izmersApjomam;
 
@@ -45,20 +45,12 @@ void printeeBaitus(unsigned char *buff, int len)
         // Ja dalās ar 8 tad printē jaunā līnijā
         if (i % 8 == 0)
         {
-            printf("    |%d\n", i);
+            //printf("    |%d\n", i);
         }
 
-        /*
-        if (i > 4 && i > 9){
-            chunkSize[i-4] = buff[i];
-        }*/
-
-        // Izprintē decimālo skaitli
-        // printf("Buferis: %02x ",buff[i]);
 
         // stringu saglabāšanas mahinācijas
         char bufsamplam[8];
-        // size_t szk, szl;
 
         // Izprintē bināro bāzi 2 skaitlim no buffera, kas ir decimāls, tātad dec>bin un tad, ja tam sūdam nav 0 priekšā,
         //  tad to ievieto kreisajā pusē lai sanāktu 8 biti katram kanālam yipēe
@@ -67,33 +59,23 @@ void printeeBaitus(unsigned char *buff, int len)
         // tad tos paņems konkatenēs, jeb saliks kopā lai izveidotu 16 bitu virkni (nagfig??), un no tās tālāk paņem vismazsvarīgāko bitu, kas ir pēdejais
         if (i % 2 == 0)
         {
-            // printf("K: %08d", int_to_bin(buff[i]));
-            // drošs buferis un izmērs izveido labu
-            // szk = snprintf(NULL, 0, "%08d", int_to_bin(buff[i]));
-            // bufk = (char *)malloc(szk + 1);
-            // snprintf(bufk, szk+1, "%08d, int_to_bin(buff[i]));
 
             // snprintf(bufsamplam, 12, "K: %08d", int_to_bin(buff[i]));
             snprintf(bufsamplam, 9, "%08d", int_to_bin(buff[i]));
-            printf("K: %s", bufsamplam);
+            //printf("K: %s", bufsamplam);
         }
         else
         {
-            // printf("L: %08d", int_to_bin(buff[i]));
-            // szl = snprintf(NULL, 0, "%08d", int_to_bin(buff[i]));
-            // bufl = (char *)malloc(szl + 1);
-            // snprintf(bufl, szl+1, "%08d", int_to_bin(buff[i]));
-
+    
             // snprintf(bufsamplam, 12, "L: %08d", int_to_bin(buff[i]));
             snprintf(bufsamplam, 9, "%08d", int_to_bin(buff[i]));
-            printf("L: %s", bufsamplam);
+            //printf("L: %s", bufsamplam);
         }
-        // printf("\t skaitli[i] = %d \t buff[0]")
-        // printf("\tbuf:%d ", bufsamplam[0] - '0');
+        
 
-        skaitli[i - 44] = bufsamplam[7] - '0';
+        skaitliFikseetie[i - 44] = bufsamplam[7] - '0';
 
-        printf("\t");
+        //printf("\t");
         if (i == (len-1)){
             izmersApjomam = i+1;
         }
@@ -136,7 +118,7 @@ int failotaajs()
         printf("\nFails ir ielasīts!");
 
         char nosaukums[20];
-        printf("%d", izmersApjomam);
+        printf(" Izmērs: %d baiti.", izmersApjomam);
         printf("\n-----------------------\nAr kādu identifikatoru vēlies atzīmēt dotā audio baitu secību?: ");
         scanf("%s", nosaukums);
 
@@ -144,9 +126,9 @@ int failotaajs()
 
 
         
-        printf("\nIevadi ranga minimālo vērtibu: ");
+        printf("\nIevadi ranga minimālo vērtibu (no): ");
         scanf("%d", &min);
-        printf("\nIevadi ranga maksimālo vērtibu: ");
+        printf("\nIevadi ranga maksimālo vērtibu (līdz): ");
         scanf("%d", &max);
         
         // 10
@@ -164,31 +146,43 @@ int failotaajs()
         int iteracija = 0;
         int paBitusk;
         int decis;
-        
-
-
+        //const int o = izmersApjomam;
+        //int skaitli[o];
+        /*
+        for (int l = 0; l < izmersApjomam; l++){
+            skaitli[l] = skaitliFikseetie[l];
+            printf("%d", skaitli[l]);
+        }
+        */ 
         do{ 
             int decis = 0;
             char binaraaVirkne[33] = {0};
             for (int b = 0; b < bituSkaitsKoNemt; b++){
                 //Bit shifts, taa veido kopiigu bin skaitli un parveido decimaalajaa
-                decis = (decis << 1) | skaitli[b + paBitusk];
+                decis = (decis << 1) | skaitliFikseetie[b + paBitusk];
                 //Ir 1 vai 0? Ja ir tad AIZIET!
-                binaraaVirkne[b] = skaitli[b + paBitusk] ? '1' : '0';
+                binaraaVirkne[b] = skaitliFikseetie[b + paBitusk] ? '1' : '0';
                 }
             iteracija++;
             paBitusk = bituSkaitsKoNemt * iteracija;
             binaraaVirkne[bituSkaitsKoNemt] = '\0';
-            if (decis < 11 && decis >= 0){ 
-                printf("pa bitu sk: %d ", paBitusk);
-                printf("decimāli = %d, bin = %s\n, iteracija = %d vajag = 3569772", decis, binaraaVirkne, iteracija);
+            if (decis <= max && decis >= 0){ 
+                //printf("pa bitu sk: %d ", paBitusk);
+                //printf("decimāli = %d, bin = %s\n, iteracija = %d vajag = 3569772", decis, binaraaVirkne, iteracija);
                 nejausieSkaitliRangaa[iteracijaKameer] = decis; 
                 iteracijaKameer++;
 
                 }
-        } while (izmersApjomam > paBitusk);
-        
-        int n = sizeof(nejausieSkaitliRangaa) / sizeof(nejausieSkaitliRangaa[0]);
+        } while (paBitusk < izmersApjomam);
+        //39861152 (ja dala ar 4)
+        //39443035
+
+        //probleema: tiek turpinaata cilpa arii pee skaitli apjoma paarsniegsanas, un tas rezulteejas lielā kļūdā ielādētajām 0
+
+
+        //int n = sizeof(nejausieSkaitliRangaa) / sizeof(nejausieSkaitliRangaa[0]);
+        int n = iteracijaKameer;
+        printf("Nejaušie skaitļi izmērs: %d\n", n);
         qsort(nejausieSkaitliRangaa, n, sizeof(int), salidzinajums);
         int skaitaamais;
 
@@ -200,6 +194,7 @@ int failotaajs()
                     skaitaamais++;
             }else{
              fprintf(f, "%d \t %d\n", min, skaitaamais);
+             printf("%d \t %d\n", min, skaitaamais);
              min++;
              skaitaamais = 0;
             }
