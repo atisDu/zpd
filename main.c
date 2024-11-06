@@ -18,35 +18,10 @@ int skaitli[par];
 int chunkSize[50];
 int izmersApjomam;
 
+int nejausieSkaitliRangaa[par];
+
 int min, max;
 
-// No binaaraa uz decimaalo
-int binUzDec(int n) 
-{ 
-    int num = n; 
-    int dec_value = 0; 
-  
-    // Initializing base value to 1, i.e 2^0 
-    int base = 1; 
-  
-    int temp = num; 
-    // Extracting the last digit of the binary number 
-    while (temp) { 
-        int last_digit = temp % 10; 
-        // Removing the last digit from the binary number 
-        temp = temp / 10; 
-  
-        // Multiplying the last digit with the base value 
-        // and adding it to the decimal value 
-        dec_value += last_digit * base; 
-  
-        // Updating the base value by multiplying it by 2 
-        base = base * 2; 
-    } 
-  
-    // Returning the decimal value 
-    return dec_value; 
-} 
 
 
 // intu uz bitiem
@@ -63,7 +38,6 @@ unsigned int_to_bin(unsigned k)
 void printeeBaitus(unsigned char *buff, int len)
 {
 
-    const int izmersApjomam = len;
     int i; // < len
     for (i = 44; i < len; i++)
     {
@@ -119,21 +93,10 @@ void printeeBaitus(unsigned char *buff, int len)
 
         skaitli[i - 44] = bufsamplam[7] - '0';
 
-        //<printf("Pēdējāis : %c", bufsamplam[7]);
-        // printf("Bufl: %c")
-        // printf(" Saktilis: %d", buff[i]);
-        // skaitli[i-44] = buff[i];
-
-        // printf(" %d", skaitli[i-44]);
-
-        // snprintf(pakaapiens, 1, "%d",buff[i]);
-        // snprintf(pakaapiens,"0x%02x",buff[i]);
-        // int elements = i - 8;
-        // skaitli[elements] = buff[i];
-        // printf("%d",skaitli[i]);
-        // printf(" kodējums:%d", buff[i]);
         printf("\t");
-
+        if (i == (len-1)){
+            izmersApjomam = i+1;
+        }
     }
     /*
     printf("chunkSize:\n");
@@ -171,54 +134,85 @@ int failotaajs()
         } while (byte_read > 0); // while(byte_read > 0);
         fclose(fileptr);
         printf("\nFails ir ielasīts!");
-        int n = sizeof(skaitli) / sizeof(skaitli[5]);
-        // qsort(skaitli, n, sizeof(int), salidzinajums);
 
         char nosaukums[20];
-        printf("%d", n);
+        printf("%d", izmersApjomam);
         printf("\n-----------------------\nAr kādu identifikatoru vēlies atzīmēt dotā audio baitu secību?: ");
         scanf("%s", nosaukums);
 
         FILE *f = fopen(nosaukums, "w");
 
 
-
-        int skaitaamais0;
-        int skaitaamais1;
-        // Izveido 256 rindiņas ar katra parādīšanās sakitu
-        for (int i = 0; i < n; i++)
-        {
-            if (skaitli[i] == 1)
-            {
-                skaitaamais1++;
-            }
-            else if (skaitli[i] == 0)
-            {
-                skaitaamais0++;
-            }
-            else
-            {
-                printf("dirst ej! i = %d", i);
-            }
-        }
-        
-
-        fprintf(f, "nulles: %d | vieninieki: %d", skaitaamais0, skaitaamais1);
         
         printf("\nIevadi ranga minimālo vērtibu: ");
         scanf("%d", &min);
         printf("\nIevadi ranga maksimālo vērtibu: ");
         scanf("%d", &max);
         
-        //10
+        // 10
         int rangs = max - min;
-        
-        //minimalis bitu skaits ko nemt
-        int bituSkaitsKoNemt = floor(log2l(rangs)) + 1;
-        printf(" bs: %d ", bituSkaitsKoNemt);
-        int vertiba;
 
-        do{
+        // minimalis bitu skaits ko nemt
+        int bituSkaitsKoNemt = floor(log2l(rangs)) + 1;
+        printf("\nBitu skaits ko ņemt: %d\n", bituSkaitsKoNemt);
+        
+            // ielasa bitu virkni ar x(bituSkaitsKoNemt elementiem un pārveido to uz deci)
+       
+        //iteracija 
+        int iteracijaKameer = 0;
+        //izmanto lai uzskaitiitu iteraacijas pilnai cikla izpildei un vareetu sarezinaat to ar 4 un tadejadi nemt naakamos 4 skaitlus katraa izpildee
+        int iteracija = 0;
+        int paBitusk;
+        int decis;
+        
+
+
+        do{ 
+            int decis = 0;
+            char binaraaVirkne[33] = {0};
+            for (int b = 0; b < bituSkaitsKoNemt; b++){
+                //Bit shifts, taa veido kopiigu bin skaitli un parveido decimaalajaa
+                decis = (decis << 1) | skaitli[b + paBitusk];
+                //Ir 1 vai 0? Ja ir tad AIZIET!
+                binaraaVirkne[b] = skaitli[b + paBitusk] ? '1' : '0';
+                }
+            iteracija++;
+            paBitusk = bituSkaitsKoNemt * iteracija;
+            binaraaVirkne[bituSkaitsKoNemt] = '\0';
+            if (decis < 11 && decis >= 0){ 
+                printf("pa bitu sk: %d ", paBitusk);
+                printf("decimāli = %d, bin = %s\n, iteracija = %d vajag = 3569772", decis, binaraaVirkne, iteracija);
+                nejausieSkaitliRangaa[iteracijaKameer] = decis; 
+                iteracijaKameer++;
+
+                }
+        } while (izmersApjomam > paBitusk);
+        
+        int n = sizeof(nejausieSkaitliRangaa) / sizeof(nejausieSkaitliRangaa[0]);
+        qsort(nejausieSkaitliRangaa, n, sizeof(int), salidzinajums);
+        int skaitaamais;
+
+        for (int x = 0; x < n; x++){
+            if (x<1){
+                skaitaamais++;
+            }
+            if(nejausieSkaitliRangaa[x-1] == nejausieSkaitliRangaa[x]){
+                    skaitaamais++;
+            }else{
+             fprintf(f, "%d \t %d\n", min, skaitaamais);
+             min++;
+             skaitaamais = 0;
+            }
+            }
+        
+        
+
+
+        //Nejausieskaitlirangaa >> sortoju >> ja pedejais ir vienaads ++, ja ne tad sak jaunu
+
+        /*z
+        do{9881888
+        //Ielasa konverteejamaa binaros skaitlus apjomaa bitu skaits ko nemt
             int konverteejamais[32];
             for (int b; b < bituSkaitsKoNemt; b++){
                 konverteejamais[b] = skaitli[b];
@@ -229,18 +223,17 @@ int failotaajs()
             for (int i = 0; i < 32; i++) {
             buf = (buf * 10) + konverteejamais[i];
             }
-            
+
             printf(" Bufferis: %d",buf);
                 vertiba = binUzDec(buf);
             printf("guh: %d ", vertiba);
         }
         while (vertiba < rangs);
+        */
 
         // fwrite(skaitli, 1, sizeof(skaitli), f);
 
         fclose(f);
-
-
 
         return 0;
     }
