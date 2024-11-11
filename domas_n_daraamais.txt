@@ -1,0 +1,3 @@
+Programmā: uztaisīt tā, lai nebūtu jāraksta pašam identifikatoru, bet automātiski paņem trokšņa nosaukumu
+
+Termiņi: janvāra beigas 30.janvāris??
