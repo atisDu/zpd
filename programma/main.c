@@ -116,11 +116,14 @@ int failotaajs()
         } while (byte_read > 0); // while(byte_read > 0);
         fclose(fileptr);
         printf("\nFails ir ielasīts!");
-
+        
         char nosaukums[20];
+        char nosaukumsBez[20];
         printf(" Izmērs: %d baiti.", izmersApjomam);
-        printf("\n-----------------------\nAr kādu identifikatoru vēlies atzīmēt dotā audio baitu secību?: ");
-        scanf("%s", nosaukums);
+        printf("\n-----------------------\nAr kādu identifikatoru vēlies atzīmēt dotā audio faila uzģenērēto nejaušo skaitļu datus?: ");
+        scanf("%s", nosaukumsBez);
+        //argv[1-4] =  '\0' ??? 
+        snprintf(nosaukums, 20, "dati/%s", nosaukumsBez);
 
         FILE *f = fopen(nosaukums, "w");
 
