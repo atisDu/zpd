@@ -118,10 +118,11 @@ int failotaajs()
         printf("\nFails ir ielasīts!");
 
         char nosaukums[20];
+        char nosaukumsBez[20];
         printf(" Izmērs: %d baiti.", izmersApjomam);
         printf("\n-----------------------\nAr kādu identifikatoru vēlies atzīmēt dotā audio baitu secību?: ");
-        scanf("%s", nosaukums);
-
+        scanf("%s", nosaukumsBez);
+        snprintf(nosaukums, 20, "dati/%s", nosaukumsBez);
         FILE *f = fopen(nosaukums, "w");
 
 
@@ -237,21 +238,22 @@ int failotaajs()
 
 int main(int argc, char *argv[])
 {
-    if (argc < 2)
+    if (argc < 1)
     {
         printf("Programma prasa norādi uz m4a faila atrašanās vietu, 1. argumentā.");
     }
-    else if (argc > 2)
+    else if (argc > 1)
     {
         printf("Programma pieņem tikai 1 argumentu - prasa norādi uz m4a faila atrašanās vietu, 1. argumentā.");
     }
     else
     {
-
-        char komanda[100];
-        sprintf(komanda, "ffmpeg -i %s output.wav", argv[1]);
-        system(komanda);
-        printf("\n\n\nIzdevās!!\n\nBaiti:\n");
+        char IerKomanda[100];
+        //char KonvKomanda[100];
+        sprintf(IerKomanda, "ffmpeg -t 60 -f pulse -i default output.wav");
+        //sprintf(KonvKomanda, "ffmpeg -i %s output.wav", argv[1]);
+        system(IerKomanda);
+        printf("\n\n\nIerakstītas 60 sekundes!!\n");
         // system("ffplay output.wav");
 
         failotaajs();
