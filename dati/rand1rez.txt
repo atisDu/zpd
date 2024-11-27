@@ -1,0 +1,40 @@
+Test Data File:/home/atis/git/zpd/dati/rand1_nejausieRob
+
+Type of Test                                      	P-Value             	Conclusion
+01. Frequency (Monobit) Test                      	0.0                 	Non-Random
+02. Frequency Test within a Block                 	0.0                 	Non-Random
+03. Runs Test                                     	0.0                 	Non-Random
+04. Test for the Longest Run of Ones in a Block   	0.0                 	Non-Random
+05. Binary Matrix Rank Test                       	0.0                 	Non-Random
+06. Discrete Fourier Transform (Spectral) Test    	0.0                 	Non-Random
+07. Non-overlapping Template Matching Test        	0.0                 	Non-Random
+08. Overlapping Template Matching Test            	0.0                 	Non-Random
+09. Maurer's "Universal Statistical" Test         	0.0                 	Non-Random
+10. Linear Complexity Test                        	0.8096127505736247  	Random
+11. Serial Test:
+													0.0                 	Non-Random
+													0.0                 	Non-Random
+12. Approximate Entropy Test                      	0.0                 	Non-Random
+13. Cumulative Sums Test (Forward)                	0.0                 	Non-Random
+14. Cumulative Sums Test (Backward)               	0.0                 	Non-Random
+15. Random Excursions Test:
+				State     	Chi Squared         	P-Value             	Conclusion
+				-4        	11.028571428571428  	0.05081642979996795 	Random
+				-3        	9.084799999999996   	0.10572920153370095 	Random
+				-2        	42.57777777777778   	4.499586387954065e-08	Non-Random
+				-1        	25.200000000000003  	0.00012747413243702083	Non-Random
+				+1        	10.0                	0.07523524614651217 	Random
+				+2        	3.3333333333333335  	0.6487423586675933  	Random
+				+3        	2.0                 	0.8491450360846096  	Random
+				+4        	1.4285714285714286  	0.9211625381990318  	Random
+16. Random Excursions Variant Test:
+				State     	COUNTS              	P-Value             	Conclusion
+				-9.0      	11                  	0.9567498363337371  	Random
+				-8.0      	14                  	0.8173613313851769  	Random
+				-7.0      	17                  	0.6642001619664318  	Random
+				-6.0      	14                  	0.7874064906662692  	Random
+				-5.0      	5                   	0.7093881150142263  	Random
+				-4.0      	3                   	0.5541131300694455  	Random
+				-3.0      	7                   	0.7641771556220948  	Random
+				-2.0      	11                  	0.897278961260083   	Random
+				-1.0      	16                  	0.17971249487899987 	Random

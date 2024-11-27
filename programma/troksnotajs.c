@@ -1,30 +1,34 @@
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <math.h>
+
+//'Ja extra arguments: pieņemt to kā audio failu jau ielasītu, noskippot serkciju'
+//Ielasīt 2 virnkes failos, bināro bez random un bināro modificēto
 
 /*
 1. Konvertēju failu uz wav
 2. Izlasu visus baitus no faila, sākot ar 44. baitu (izlaižot headeru)
 3. Pārveidoju hexadecimālos baitus uz bināriem bitiem
-
 */
 // globaalais jo gribu %%%
 
-// VISU MAX IZMĒRU DEFINĪCIJA
+// max izmēra definīcija
 #define par 40000000
-// failu definīcijas
-int skaitliFikseetie[par];
+
+// bināro mainīgo skaitļu definīcijas
+int binFikseetie[par];
 int chunkSize[50];
 int izmersApjomam;
 
-int nejausieSkaitliRangaa[par];
+int nejausieSkaitliRobezaas[par];
 
 int min, max;
 
 
 
-// intu uz bitiem
+// no veseliem skaitļiem uz bitiem
 
 unsigned int_to_bin(unsigned k)
 {
@@ -34,6 +38,8 @@ unsigned int_to_bin(unsigned k)
         return 1;
     return (k % 2) + 10 * int_to_bin(k / 2);
 }
+
+// Funkcija, kas ielasa baitus no audio faila masīvā
 
 void printeeBaitus(unsigned char *buff, int len)
 {
@@ -50,7 +56,7 @@ void printeeBaitus(unsigned char *buff, int len)
 
 
         // stringu saglabāšanas mahinācijas
-        char bufsamplam[8];
+        char bufsamplam[9];
 
         // Izprintē bināro bāzi 2 skaitlim no buffera, kas ir decimāls, tātad dec>bin un tad, ja tam sūdam nav 0 priekšā,
         //  tad to ievieto kreisajā pusē lai sanāktu 8 biti katram kanālam yipēe
@@ -72,29 +78,23 @@ void printeeBaitus(unsigned char *buff, int len)
             //printf("L: %s", bufsamplam);
         }
         
-
-        skaitliFikseetie[i - 44] = bufsamplam[7] - '0';
-
+        binFikseetie[i - 44] = bufsamplam[7] - '0';
+        
         //printf("\t");
         if (i == (len-1)){
             izmersApjomam = i+1;
         }
     }
-    /*
-    printf("chunkSize:\n");
-    for (int i=0;i< 10;i++){
-        printf("0x%02x", chunkSize[i]);
-    }
-    */
 }
 
 int salidzinajums(const void *a, const void *b)
 {
 
-    // If a is smaller, positive value will be returned
+    // Ja a ir mazāks, atgriezīs pozitīvu vērtību
     return (*(int *)a - *(int *)b);
 }
 
+// Ielasa nejuašo skaitļu datus failā
 int failotaajs(char nosaukumsBez[20])
 {
 
@@ -127,8 +127,7 @@ int failotaajs(char nosaukumsBez[20])
         snprintf(nosaukums, 20, "dati/%s", nosaukumsBez);
         FILE *f = fopen(nosaukums, "w");
 
-
-        
+  
         printf("\nIevadi ranga minimālo vērtibu (no): ");
         scanf("%d", &min);
         printf("\nIevadi ranga maksimālo vērtibu (līdz): ");
@@ -145,26 +144,19 @@ int failotaajs(char nosaukumsBez[20])
        
         //iteracija 
         int iteracijaKameer = 0;
-        //izmanto lai uzskaitiitu iteraacijas pilnai cikla izpildei un vareetu sarezinaat to ar 4 un tadejadi nemt naakamos 4 skaitlus katraa izpildee
+        // Izmanto, lai uzskaitītu iterāciju, jeb izpilžu skaitu pilnai cikla izpildei un vareetu sarezinaat to ar /bituSkaitsKoNemt/ un tādejādi ņemt nākamos /bituSkaitsKoNemt/ skaitļus katrā izpildē
         int iteracija = 0;
         int paBitusk;
         int decis;
-        //const int o = izmersApjomam;
-        //int skaitli[o];
-        /*
-        for (int l = 0; l < izmersApjomam; l++){
-            skaitli[l] = skaitliFikseetie[l];
-            printf("%d", skaitli[l]);
-        }
-        */ 
+        
         do{ 
             int decis = 0;
-            char binaraaVirkne[33] = {0};
+            char binaraaVirkne[32] = {0};
             for (int b = 0; b < bituSkaitsKoNemt; b++){
                 //Bit shifts, taa veido kopiigu bin skaitli un parveido decimaalajaa
-                decis = (decis << 1) | skaitliFikseetie[b + paBitusk];
+                decis = (decis << 1) | binFikseetie[b + paBitusk];
                 //Ir 1 vai 0? Ja ir tad AIZIET!
-                binaraaVirkne[b] = skaitliFikseetie[b + paBitusk] ? '1' : '0';
+                binaraaVirkne[b] = binFikseetie[b + paBitusk] ? '1' : '0';
                 }
             iteracija++;
             paBitusk = bituSkaitsKoNemt * iteracija;
@@ -172,7 +164,7 @@ int failotaajs(char nosaukumsBez[20])
             if (decis <= max && decis >= 0){ 
                 //printf("pa bitu sk: %d ", paBitusk);
                 //printf("decimāli = %d, bin = %s\n, iteracija = %d vajag = 3569772", decis, binaraaVirkne, iteracija);
-                nejausieSkaitliRangaa[iteracijaKameer] = decis; 
+                nejausieSkaitliRobezaas[iteracijaKameer] = decis; 
                 iteracijaKameer++;
 
                 }
@@ -186,14 +178,28 @@ int failotaajs(char nosaukumsBez[20])
         //int n = sizeof(nejausieSkaitliRangaa) / sizeof(nejausieSkaitliRangaa[0]);
         int n = iteracijaKameer;
         printf("Nejaušie skaitļi izmērs: %d\n", n);
-        qsort(nejausieSkaitliRangaa, n, sizeof(int), salidzinajums);
-        int skaitaamais;
+        
+         
+        
+        char binModificeetieNsk[40];
+        snprintf(binModificeetieNsk, 40, "dati/%s_nejausieRobezaas.txt", nosaukumsBez);
+        FILE *binModificeetie = fopen(binModificeetieNsk,"w");
 
+        for (int o = 0; o < n; o++){
+            fprintf(binModificeetie, "%d", nejausieSkaitliRobezaas[o]);
+        }
+
+        fclose(binModificeetie);
+
+        qsort(nejausieSkaitliRobezaas, n, sizeof(int), salidzinajums);
+        int skaitaamais;
+        
+        
         for (int x = 0; x < n; x++){
             if (x<1){
                 skaitaamais++;
             }
-            if(nejausieSkaitliRangaa[x-1] == nejausieSkaitliRangaa[x]){
+            if(nejausieSkaitliRobezaas[x-1] == nejausieSkaitliRobezaas[x]){
                     skaitaamais++;
             }else{
              fprintf(f, "%d \t %d\n", min, skaitaamais);
@@ -230,35 +236,54 @@ int failotaajs(char nosaukumsBez[20])
         */
 
         // fwrite(skaitli, 1, sizeof(skaitli), f);
-
+        
         fclose(f);
+        
+        char binFailaNsk[40];
+        
+        printf("\nIelasa bināros skaitļus failā!\n");
+        snprintf(binFailaNsk, 40, "dati/%s_bin.txt", nosaukumsBez);
+        
+        FILE *binfails = fopen(binFailaNsk, "w");
+       
+        int izmers = sizeof(binFikseetie) / sizeof(binFikseetie[0]);
+
+        for (int v; v < izmers; v++){
+            fprintf(binfails, "%d", binFikseetie[v]);
+        }
+
+        fclose(binfails);
 
         return 0;
     }
+    
+    return 1;
 }
 /* programma pieņem 2 argumentus: main *norādes uz failu*.m4a */
 
 int main(int argc, char *argv[])
 {
-    if (argc < 2)
+    if (argc < 3)
     {
-        printf("Programma prasa norādi uz m4a faila atrašanās vietu, 1. argumentā.");
+        printf("Programma prasa 1. (jauns/eksist) norādi uz m4a faila atrašanās vietu, 2. argumentā.");
     }
-    else if (argc > 2)
+    else if (argc > 4)
     {
-        printf("Programma pieņem tikai 1 argumentu - prasa norādi uz m4a faila atrašanās vietu, 1. argumentā.");
+        printf("Programma pieņem tikai 2 argumentu - prasa norādi uz m4a faila atrašanās vietu, 1. argumentā");
     }
-    else
-    {
+    else if (0 == strcmp(argv[1], "nav")) {
+
         char IerKomanda[100];
         //char KonvKomanda[100];
-        sprintf(IerKomanda, "ffmpeg -t 60 -f pulse -i default trokšņi/%s.wav", argv[1]);
+        sprintf(IerKomanda, "ffmpeg -t 120 -f pulse -i default trokšņi/%s.wav", argv[2]);
         //sprintf(KonvKomanda, "ffmpeg -i %s output.wav", argv[1]);
         system(IerKomanda);
-        printf("\n\n\nIerakstītas 60 sekundes!!\n");
+        printf("\n\n\nIerakstītas 120 sekundes!!\n");
         // system("ffplay output.wav");
 
-        failotaajs(argv[1]);
+        failotaajs(argv[2]);
         return 0;
+    } else if (0 == strcmp(argv[1], "ir")) {
+        failotaajs(argv[2]);
     }
 }
