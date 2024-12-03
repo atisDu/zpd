@@ -15,7 +15,8 @@
 // globaalais jo gribu %%%
 
 // max izmēra definīcija
-#define par 40000000
+#define par 90000000
+
 
 // bināro mainīgo skaitļu definīcijas
 int binFikseetie[par];
@@ -104,7 +105,19 @@ int failotaajs(char nosaukumsBez[20])
     sprintf(atvert, "trokšņi/%s.wav", nosaukumsBez);
     fileptr = fopen(atvert, "rb");
 
-    unsigned char buffer[4000000];
+//    unsigned char buffer[40000000];
+//    Lai risinātu jūsu problēmu ar segfault (core dumped), ja pievienojat nullīti jebkurai no mainīgajām, ir vairāki iespējamie iemesli, kas var izraisīt šo kļūdu. Galvenais, kas jāņem vērā, ir atmiņas piešķiršana un pārsniegšana.
+
+unsigned char *buffer = malloc(9000000 * sizeof(unsigned char));
+if (buffer == NULL) {
+    printf("Atmiņas piešķiršana neizdevās!\n");
+    exit(1);
+}
+
+
+
+
+    int kop_read = 0;
     size_t byte_read;
 
     if (fileptr != NULL)
@@ -113,15 +126,20 @@ int failotaajs(char nosaukumsBez[20])
         // double check this
         do
         { // sizeof(unsigned char) ir baita izmērs: 8 biti un programma veselu skaitli pieņem kā izmēru bitos, tā kā abiem būtu jāstrādā, bet drošs paliek drošs.
-            byte_read = fread(buffer, sizeof(unsigned char), 4000000, fileptr);
+            byte_read = fread(buffer, sizeof(unsigned char), 9000000, fileptr);
+            printf("byte_read: %lu\n", byte_read);
             printeeBaitus(buffer, byte_read);
+            kop_read = kop_read + byte_read;
         } while (byte_read > 0); // while(byte_read > 0);
+        
         fclose(fileptr);
         printf("\nFails ir ielasīts!");
 
         char nosaukums[20];
         //char nosaukumsBez[20];
+        printf(" Izmērs %d baiti.", kop_read);
         printf(" Izmērs: %d baiti.", izmersApjomam);
+        izmersApjomam = kop_read;
         printf("\n-----------------------\nAr kādu identifikatoru vēlies atzīmēt dotā audio baitu secību?: ");
         //scanf("%s", nosaukumsBez);
         snprintf(nosaukums, 20, "dati/%s", nosaukumsBez);
@@ -179,6 +197,7 @@ int failotaajs(char nosaukumsBez[20])
         int n = iteracijaKameer;
         printf("Nejaušie skaitļi izmērs: %d\n", n);
         
+        free(buffer);
          
         
         char binModificeetieNsk[40];
@@ -238,22 +257,27 @@ int failotaajs(char nosaukumsBez[20])
         // fwrite(skaitli, 1, sizeof(skaitli), f);
         
         fclose(f);
+/*        
+        char SkewFailaNsk[40];
         
-        char binFailaNsk[40];
+        printf("\nVai labot datus, lai skaitļi neatkārtojas?\n");
+        snprintf(SkewFailaNsk, 40, "dati/%s_bezNovirzes.txt", nosaukumsBez);
         
-        printf("\nIelasa bināros skaitļus failā!\n");
-        snprintf(binFailaNsk, 40, "dati/%s_bin.txt", nosaukumsBez);
-        
-        FILE *binfails = fopen(binFailaNsk, "w");
+        FILE *binfails = fopen(SkewFailaNsk, "w");
        
         int izmers = sizeof(binFikseetie) / sizeof(binFikseetie[0]);
 
         for (int v; v < izmers; v++){
+            if (v == 0){
+                fprintf(binfails, "%d", binFikseetie[v]);
+            } else if (binFikseetie[v] == binFikseetie[v-1]){
+            printf(" ");
+            } else {
             fprintf(binfails, "%d", binFikseetie[v]);
-        }
+        }}
 
         fclose(binfails);
-
+*/
         return 0;
     }
     
@@ -275,10 +299,10 @@ int main(int argc, char *argv[])
 
         char IerKomanda[100];
         //char KonvKomanda[100];
-        sprintf(IerKomanda, "ffmpeg -t 120 -f pulse -i default trokšņi/%s.wav", argv[2]);
+        sprintf(IerKomanda, "ffmpeg -t 240 -f pulse -i default trokšņi/%s.wav", argv[2]);
         //sprintf(KonvKomanda, "ffmpeg -i %s output.wav", argv[1]);
         system(IerKomanda);
-        printf("\n\n\nIerakstītas 120 sekundes!!\n");
+        printf("\n\n\nIerakstītas 240 sekundes!!\n");
         // system("ffplay output.wav");
 
         failotaajs(argv[2]);
