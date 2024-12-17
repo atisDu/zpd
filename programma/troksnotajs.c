@@ -15,15 +15,16 @@
 // globaalais jo gribu %%%
 
 // max izmēra definīcija
-#define par 90000000
+//#define par 9000000000
 
 
 // bināro mainīgo skaitļu definīcijas
-int binFikseetie[par];
+//int binFikseetie[par];
+
 int chunkSize[50];
 int izmersApjomam;
 
-int nejausieSkaitliRobezaas[par];
+//int nejausieSkaitliRobezaas[par];
 
 int min, max;
 
@@ -79,7 +80,7 @@ void printeeBaitus(unsigned char *buff, int len)
             //printf("L: %s", bufsamplam);
         }
         
-        binFikseetie[i - 44] = bufsamplam[7] - '0';
+        binFikseetie[i - 44] = bufsamplam[0] - '0';
         
         //printf("\t");
         if (i == (len-1)){
@@ -137,13 +138,35 @@ if (buffer == NULL) {
 
         char nosaukums[20];
         //char nosaukumsBez[20];
-        printf(" Izmērs %d baiti.", kop_read);
-        printf(" Izmērs: %d baiti.", izmersApjomam);
+        printf(" IzmērsKop_read %d baiti.", kop_read);
+        printf(" IzmērsApjomam: %d baiti.", izmersApjomam);
         izmersApjomam = kop_read;
         printf("\n-----------------------\nAr kādu identifikatoru vēlies atzīmēt dotā audio baitu secību?: ");
         //scanf("%s", nosaukumsBez);
         snprintf(nosaukums, 20, "dati/%s", nosaukumsBez);
         FILE *f = fopen(nosaukums, "w");
+
+        
+        //Ievada bitus 0 un 1 failā
+        char binNemainitoNsk[40];
+        snprintf(binNemainitoNsk, 40, "dati/%s_biti.txt", nosaukumsBez);
+        FILE *binNemainitie = fopen(binNemainitoNsk,"w");
+        int skaitiitaajs;
+        for (int o = 0; o < kop_read; o++){
+            if (o == 0){
+                skaitiitaajs = 1;
+            }
+            else if (binFikseetie[o] == binFikseetie[o-1]){
+            skaitiitaajs++;
+            } else {
+            skaitiitaajs = 0;
+            }
+            if (skaitiitaajs < 300){ // 40 120 300
+            fprintf(binNemainitie, "%d", binFikseetie[o]);
+        }
+        }
+
+fclose(binNemainitie);
 
   
         printf("\nIevadi ranga minimālo vērtibu (no): ");
@@ -186,7 +209,7 @@ if (buffer == NULL) {
                 iteracijaKameer++;
 
                 }
-        } while (paBitusk < izmersApjomam);
+        } while (paBitusk < kop_read);
         //39861152 (ja dala ar 4)
         //39443035
 
@@ -208,8 +231,35 @@ if (buffer == NULL) {
             fprintf(binModificeetie, "%d", nejausieSkaitliRobezaas[o]);
         }
 
-        fclose(binModificeetie);
-
+    fclose(binModificeetie);
+	
+    /*
+	printf("Laiks tvaicēt");
+	//Ja 0 atkārtojas virknē vairāk kā 7, tad viss
+	char labotieModificeetieNsk[40];
+	snprintf(labotieModificeetieNsk, 40, "dati/%s_labotieRobezaas.txt", nosaukumsBez);
+	FILE *labotieModificeetie = fopen(labotieModificeetieNsk, "w");
+	int virknesSkaitaamais;
+	for (int b = 0; b < n; n++){
+	if (b == 0){
+		virknesSkaitaamais++;
+	} 
+	if (virknesSkaitaamais > 16){
+	//ss
+	printf("");
+	}
+	else if (nejausieSkaitliRobezaas[b-1] == nejausieSkaitliRobezaas[b]){
+		fprintf(labotieModificeetie, "%d", nejausieSkaitliRobezaas[b]);	
+		virknesSkaitaamais++; 	
+	} 
+	else {	
+		virknesSkaitaamais = 0;
+		fprintf(labotieModificeetie, "%d", nejausieSkaitliRobezaas[b]);	
+	}
+	}
+    
+	fclose(labotieModificeetie);
+    */
         qsort(nejausieSkaitliRobezaas, n, sizeof(int), salidzinajums);
         int skaitaamais;
         
@@ -299,10 +349,10 @@ int main(int argc, char *argv[])
 
         char IerKomanda[100];
         //char KonvKomanda[100];
-        sprintf(IerKomanda, "ffmpeg -t 240 -f pulse -i default trokšņi/%s.wav", argv[2]);
+        sprintf(IerKomanda, "ffmpeg -t 600 -f pulse -i default trokšņi/%s.wav", argv[2]);
         //sprintf(KonvKomanda, "ffmpeg -i %s output.wav", argv[1]);
         system(IerKomanda);
-        printf("\n\n\nIerakstītas 240 sekundes!!\n");
+        printf("\n\n\nIerakstītas 600 sekundes!!\n");
         // system("ffplay output.wav");
 
         failotaajs(argv[2]);
@@ -311,3 +361,5 @@ int main(int argc, char *argv[])
         failotaajs(argv[2]);
     }
 }
+
+
