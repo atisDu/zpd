@@ -15,14 +15,18 @@
 // globaalais jo gribu %%%
 
 // max izmēra definīcija
-//#define par 9000000000
+size_t par = 900000000;
 
 
 // bināro mainīgo skaitļu definīcijas
 //int binFikseetie[par];
 
+int *binFikseetie = NULL;
+int *nejausieSkaitliRobezaas = NULL;
+
+
+
 int chunkSize[50];
-int izmersApjomam;
 
 //int nejausieSkaitliRobezaas[par];
 
@@ -43,35 +47,36 @@ unsigned int_to_bin(unsigned k)
 
 // Funkcija, kas ielasa baitus no audio faila masīvā
 
-void printeeBaitus(unsigned char *buff, int len)
+void printeeBaitus(unsigned char *buff, int len, int jau_ielasitais)
 {
 
     int i; // < len
     for (i = 44; i < len; i++)
     {
-
+        /*
+        if (i % 1000000 == 0){
         // Ja dalās ar 8 tad printē jaunā līnijā
-        if (i % 8 == 0)
-        {
-            //printf("    |%d\n", i);
+        printf("    |%d\n", i);
         }
-
+        */
 
         // stringu saglabāšanas mahinācijas
         char bufsamplam[9];
-
+        
         // Izprintē bināro bāzi 2 skaitlim no buffera, kas ir decimāls, tātad dec>bin un tad, ja tam sūdam nav 0 priekšā,
         //  tad to ievieto kreisajā pusē lai sanāktu 8 biti katram kanālam yipēe
 
         // lai saglabātu tiek 2 reizes izsaukts snprintf, 1. lai noskaidrotu izmeru, 2. lai ierakstiitu bufferii,
         // tad tos paņems konkatenēs, jeb saliks kopā lai izveidotu 16 bitu virkni (nagfig??), un no tās tālāk paņem vismazsvarīgāko bitu, kas ir pēdejais
-        if (i % 2 == 0)
-        {
+        //if (i % 2 == 0)
+        //{
 
             // snprintf(bufsamplam, 12, "K: %08d", int_to_bin(buff[i]));
             snprintf(bufsamplam, 9, "%08d", int_to_bin(buff[i]));
             //printf("K: %s", bufsamplam);
-        }
+            //printf("A: %d\n", bufsamplam[0] - '0');
+        //}
+        /*
         else
         {
     
@@ -79,13 +84,12 @@ void printeeBaitus(unsigned char *buff, int len)
             snprintf(bufsamplam, 9, "%08d", int_to_bin(buff[i]));
             //printf("L: %s", bufsamplam);
         }
-        
-        binFikseetie[i - 44] = bufsamplam[0] - '0';
+        */
+       int indekss_ar_pieskatiito = i + jau_ielasitais - 44;
+        binFikseetie[indekss_ar_pieskatiito] = bufsamplam[0] - '0';
+        //printf("%d", indekss_ar_pieskatiito);
         
         //printf("\t");
-        if (i == (len-1)){
-            izmersApjomam = i+1;
-        }
     }
 }
 
@@ -109,13 +113,24 @@ int failotaajs(char nosaukumsBez[20])
 //    unsigned char buffer[40000000];
 //    Lai risinātu jūsu problēmu ar segfault (core dumped), ja pievienojat nullīti jebkurai no mainīgajām, ir vairāki iespējamie iemesli, kas var izraisīt šo kļūdu. Galvenais, kas jāņem vērā, ir atmiņas piešķiršana un pārsniegšana.
 
-unsigned char *buffer = malloc(9000000 * sizeof(unsigned char));
+unsigned char *buffer = malloc(par * sizeof(unsigned char));
 if (buffer == NULL) {
     printf("Atmiņas piešķiršana neizdevās!\n");
     exit(1);
 }
 
+binFikseetie = malloc(par * sizeof(int));
+if (binFikseetie == NULL) {
+    printf("Neizdevās piešķirt atmiņu binFikseetie!\n");
+    exit(1);
+}
 
+nejausieSkaitliRobezaas = malloc(par * sizeof(int));
+if (nejausieSkaitliRobezaas == NULL) {
+    printf("Neizdevās piešķirt atmiņu nejausieSkaitliRobezaas!\n");
+    free(binFikseetie);
+    exit(1);
+}
 
 
     int kop_read = 0;
@@ -128,24 +143,49 @@ if (buffer == NULL) {
         do
         { // sizeof(unsigned char) ir baita izmērs: 8 biti un programma veselu skaitli pieņem kā izmēru bitos, tā kā abiem būtu jāstrādā, bet drošs paliek drošs.
             byte_read = fread(buffer, sizeof(unsigned char), 9000000, fileptr);
-            printf("byte_read: %lu\n", byte_read);
-            printeeBaitus(buffer, byte_read);
+            printf("kop_read: %d\n", kop_read);
+            printeeBaitus(buffer, byte_read, byte_read);
             kop_read = kop_read + byte_read;
+
+            //Paplašina binFikseetie un NejausiSkaitliRobezaas izmērus..
+        if (par <= kop_read){
+        printf("\nPielāgo masīvu izmērus...\n");
+        
+         
+        binFikseetie = realloc(binFikseetie, kop_read * sizeof(int));
+        if (binFikseetie == NULL) {
+            printf("Neizdevās paplašināt binFikseetie!\n");
+        exit(1);
+        }
+        
+        nejausieSkaitliRobezaas = realloc(nejausieSkaitliRobezaas, kop_read * sizeof(int));
+        if (nejausieSkaitliRobezaas == NULL) {
+            printf("Neizdevās piešķirt atmiņu nejausieSkaitliRobezaas!\n");
+        exit(1);
+        }
+        
+        printf("\nBin fikseetie izmers: %ld \n", par);
+        }
+        
+
         } while (byte_read > 0); // while(byte_read > 0);
         
+        //free(buffer);
         fclose(fileptr);
         printf("\nFails ir ielasīts!");
+
+        
+
 
         char nosaukums[20];
         //char nosaukumsBez[20];
         printf(" IzmērsKop_read %d baiti.", kop_read);
-        printf(" IzmērsApjomam: %d baiti.", izmersApjomam);
-        izmersApjomam = kop_read;
         printf("\n-----------------------\nAr kādu identifikatoru vēlies atzīmēt dotā audio baitu secību?: ");
         //scanf("%s", nosaukumsBez);
         snprintf(nosaukums, 20, "dati/%s", nosaukumsBez);
         FILE *f = fopen(nosaukums, "w");
 
+        
         
         //Ievada bitus 0 un 1 failā
         char binNemainitoNsk[40];
@@ -161,12 +201,12 @@ if (buffer == NULL) {
             } else {
             skaitiitaajs = 0;
             }
-            if (skaitiitaajs < 300){ // 40 120 300
+            if (skaitiitaajs < 400){ // 40 120 300
             fprintf(binNemainitie, "%d", binFikseetie[o]);
         }
         }
 
-fclose(binNemainitie);
+        fclose(binNemainitie);
 
   
         printf("\nIevadi ranga minimālo vērtibu (no): ");
@@ -219,16 +259,31 @@ fclose(binNemainitie);
         //int n = sizeof(nejausieSkaitliRangaa) / sizeof(nejausieSkaitliRangaa[0]);
         int n = iteracijaKameer;
         printf("Nejaušie skaitļi izmērs: %d\n", n);
-        
+        printf("Kop_read savukārt: %d\n", kop_read);
         free(buffer);
          
         
         char binModificeetieNsk[40];
-        snprintf(binModificeetieNsk, 40, "dati/%s_nejausieRobezaas.txt", nosaukumsBez);
+        snprintf(binModificeetieNsk, 40, "dati/%s_nemodif_biti.txt", nosaukumsBez);
         FILE *binModificeetie = fopen(binModificeetieNsk,"w");
-
-        for (int o = 0; o < n; o++){
+        
+        for (int o = 0; o < kop_read; o++){
             fprintf(binModificeetie, "%d", nejausieSkaitliRobezaas[o]);
+        /*
+        skaitiitaajs = 0;
+        for (int o = 0; o < kop_read; o++){
+            if (o == 0){
+                skaitiitaajs = 1;
+            }
+            else if (nejausieSkaitliRobezaas[o] == nejausieSkaitliRobezaas[o-1]){
+            skaitiitaajs++;
+            } else {
+            skaitiitaajs = 0;
+            }
+            if (skaitiitaajs < 300){ // 40 120 300 1000
+            fprintf(binModificeetie, "%d", nejausieSkaitliRobezaas[o]);
+        }
+        */
         }
 
     fclose(binModificeetie);
@@ -327,7 +382,10 @@ fclose(binNemainitie);
         }}
 
         fclose(binfails);
-*/
+*/         
+        free(binFikseetie);
+        free(nejausieSkaitliRobezaas);
+
         return 0;
     }
     
@@ -349,10 +407,11 @@ int main(int argc, char *argv[])
 
         char IerKomanda[100];
         //char KonvKomanda[100];
-        sprintf(IerKomanda, "ffmpeg -t 600 -f pulse -i default trokšņi/%s.wav", argv[2]);
+        //maiņā no 600
+        sprintf(IerKomanda, "ffmpeg -t 1800 -f pulse -i default trokšņi/%s.wav", argv[2]);
         //sprintf(KonvKomanda, "ffmpeg -i %s output.wav", argv[1]);
         system(IerKomanda);
-        printf("\n\n\nIerakstītas 600 sekundes!!\n");
+        printf("\n\n\nIerakstītas 30 minūtes!!\n");
         // system("ffplay output.wav");
 
         failotaajs(argv[2]);
